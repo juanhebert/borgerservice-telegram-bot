@@ -20,7 +20,7 @@ Create a new Telegram bot by using the [BotFather](https://core.telegram.org/bot
 
 ### Step 2: Obtaining the Borgerservice URL and Cookie
 
-In a web browser, go to [this page](https://reservation.frontdesksuite.com/kbh/Borgerservice), set the interface language to _English_ (this is important) in the upper-right corner, then navigate to _MitID > Other_. Open the DevTools' Network tab, reload the page, copy the current URL as well as the Cookie from the main HTTP request, and set up the corresponding environment variables.
+In a web browser, go to [this page](https://reservation.frontdesksuite.com/kbh/Borgerservice), set the interface language to **English** (this is important) in the upper-right corner, then navigate to _MitID > Other_. Open the DevTools' Network tab, reload the page, copy the current URL as well as the Cookie from the main HTTP request, and set up the corresponding environment variables.
 
 ### Step 3: Connect to your Bot
 
