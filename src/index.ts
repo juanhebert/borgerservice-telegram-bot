@@ -49,6 +49,21 @@ const minDate = (a: Date | undefined, b: Date | undefined) => {
 };
 
 const main = async () => {
+  bot.setMyCommands([
+    {
+      command: "/ping",
+      description: "receive a pong message back from the bot",
+    },
+    {
+      command: "/subscribe",
+      description:
+        "receive a notification when a new timeslot becomes available",
+    },
+    {
+      command: "/unsubscribe",
+      description: "unsubscribe from the appointment notifications",
+    },
+  ]);
   bot.on("message", (msg) => {
     const chatId = msg.chat.id.toString();
     const message = msg.text?.toString();
