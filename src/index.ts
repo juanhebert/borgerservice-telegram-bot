@@ -93,7 +93,8 @@ const main = async () => {
     const humanReadableDates = availableDates.map(displayDate);
     if (
       candidateDate &&
-      (!currentBestDate || candidateDate !== currentBestDate)
+      (!currentBestDate ||
+        candidateDate.getTime() !== currentBestDate.getTime())
     ) {
       console.log(`NEW AVAILABLE TIME SLOT! ${humanReadableDates[0]}`);
       chatIds.forEach((conversation) =>
