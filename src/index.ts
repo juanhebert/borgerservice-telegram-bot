@@ -22,8 +22,10 @@ const {
   BORGERSERVICE_CONVERSATION = "",
 } = process.env;
 
-let conversation =
-  BORGERSERVICE_CONVERSATION !== "" ? BORGERSERVICE_CONVERSATION : undefined;
+const conversations = new Set<string>();
+if (BORGERSERVICE_CONVERSATION !== "") {
+  conversations.add(BORGERSERVICE_CONVERSATION);
+}
 
 if (
   BORGERSERVICE_URL === "" ||
@@ -56,14 +58,22 @@ const main = async () => {
         console.log(`Ping from chat id ${chatId}`);
         bot.sendMessage(chatId, "Pong!");
         break;
+      case "/start":
       case "/subscribe":
-        conversation = chatId;
-        bot.sendMessage(chatId, "You are now subscribed to the notifications.");
-        console.log(`New subscriber: ${chatId}`);
+        if (!conversations.has(chatId)) {
+          conversations.add(chatId);
+          bot.sendMessage(
+            chatId,
+            "You are now subscribed to the notifications."
+          );
+          console.log(`New subscriber: ${chatId}`);
+        } else {
+          bot.sendMessage(chatId, "You are already subscribed.");
+        }
         break;
       case "/unsubscribe":
-        if (chatId === conversation) {
-          conversation = undefined;
+        if (conversations.has(chatId)) {
+          conversations.delete(chatId);
           bot.sendMessage(chatId, "You are now unsubscribed.");
           console.log(`${chatId} just unsubscribed`);
         } else {
@@ -97,13 +107,13 @@ const main = async () => {
       (!currentBestDate || candidateDate !== currentBestDate)
     ) {
       console.log(`NEW AVAILABLE TIME SLOT! ${humanReadableDates[0]}`);
-      if (conversation) {
+      conversations.forEach((conversation) =>
         bot.sendMessage(
           conversation,
           `🚨🚨🚨 *NEW DATE ALERT* 🚨🚨🚨\n\nFound free time slot on: ${humanReadableDates[0]}`,
           { parse_mode: "Markdown" }
-        );
-      }
+        )
+      );
     }
 
     console.log(new Date());
