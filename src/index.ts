@@ -2,8 +2,8 @@ import axios from "axios";
 import { load } from "cheerio";
 import * as dotenv from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
-import { dateOptions, locale, ONE_MINUTE } from "./constants";
-import { minDate, sleep } from "./utils";
+import { ONE_MINUTE } from "./constants";
+import { displayDate, minDate, sleep } from "./utils";
 
 dotenv.config();
 
@@ -90,9 +90,7 @@ const main = async () => {
     });
     availableDates.sort((a, b) => a.getTime() - b.getTime());
     const candidateDate = availableDates[0];
-    const humanReadableDates = availableDates.map((date) =>
-      date.toLocaleDateString(locale, dateOptions)
-    );
+    const humanReadableDates = availableDates.map(displayDate);
     if (
       candidateDate &&
       (!currentBestDate || candidateDate !== currentBestDate)
