@@ -6,13 +6,13 @@ A Telegram bot that notifies its users when an appointment at Borgerservice beco
 
 ### Step 0: Create a `.env` File (Optional)
 
-Run the following comment
+Run the following command in a terminal:
 
 ```
-cp .env.example .env
+$ cp .env.example .env
 ```
 
-We will now fill out the missing values in the resulting `.env` file (or you can simply configure the corresponding environment variables in your shell).
+We will now fill out the missing values in the resulting `.env` file (or you can simply configure the corresponding environment variables in your shell.)
 
 ### Step 1: Obtaining a Telegram Bot Token
 
