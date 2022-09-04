@@ -1,19 +1,11 @@
-import TelegramBot from "node-telegram-bot-api";
-import * as dotenv from "dotenv";
 import axios from "axios";
 import { load } from "cheerio";
+import * as dotenv from "dotenv";
+import TelegramBot from "node-telegram-bot-api";
+import { dateOptions, locale, ONE_MINUTE } from "./constants";
+import { minDate, sleep } from "./utils";
 
 dotenv.config();
-
-const locale = "en-US";
-const dateOptions = {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-} as const;
-
-const ONE_MINUTE = 60_000; // 60 * 1000 milliseconds
 
 const {
   BORGERSERVICE_URL = "",
@@ -21,11 +13,6 @@ const {
   BORGERSERVICE_TELEGRAM_TOKEN = "",
   BORGERSERVICE_CONVERSATION = "",
 } = process.env;
-
-const conversations = new Set<string>();
-if (BORGERSERVICE_CONVERSATION !== "") {
-  conversations.add(BORGERSERVICE_CONVERSATION);
-}
 
 if (
   BORGERSERVICE_URL === "" ||
@@ -39,67 +26,60 @@ if (
 }
 
 const bot = new TelegramBot(BORGERSERVICE_TELEGRAM_TOKEN, { polling: true });
+const chatIds = new Set<string>();
+if (BORGERSERVICE_CONVERSATION !== "") {
+  chatIds.add(BORGERSERVICE_CONVERSATION);
+}
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+bot.setMyCommands([
+  {
+    command: "/ping",
+    description: "receive a pong message back from the bot",
+  },
+  {
+    command: "/subscribe",
+    description: "receive a notification when a new timeslot becomes available",
+  },
+  {
+    command: "/unsubscribe",
+    description: "unsubscribe from the appointment notifications",
+  },
+]);
 
-const minDate = (a: Date | undefined, b: Date | undefined) => {
-  if (!a) return b;
-  if (!b) return a;
-  return a < b ? a : b;
-};
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id.toString();
+  const message = msg.text?.toString();
+  console.log(`Message from ${chatId}: ${message}`);
+  switch (message) {
+    case "/ping":
+      console.log(`Ping from chat id ${chatId}`);
+      bot.sendMessage(chatId, "Pong!");
+      break;
+    case "/start":
+    case "/subscribe":
+      if (!chatIds.has(chatId)) {
+        chatIds.add(chatId);
+        bot.sendMessage(chatId, "You are now subscribed to the notifications.");
+        console.log(`New subscriber: ${chatId}`);
+      } else {
+        bot.sendMessage(chatId, "You are already subscribed.");
+      }
+      break;
+    case "/unsubscribe":
+      if (chatIds.has(chatId)) {
+        chatIds.delete(chatId);
+        bot.sendMessage(chatId, "You are now unsubscribed.");
+        console.log(`${chatId} just unsubscribed`);
+      } else {
+        bot.sendMessage(chatId, "You are not subscribed.");
+      }
+      break;
+    default:
+      bot.sendMessage(chatId, "I do not understand the command");
+  }
+});
 
 const main = async () => {
-  bot.setMyCommands([
-    {
-      command: "/ping",
-      description: "receive a pong message back from the bot",
-    },
-    {
-      command: "/subscribe",
-      description:
-        "receive a notification when a new timeslot becomes available",
-    },
-    {
-      command: "/unsubscribe",
-      description: "unsubscribe from the appointment notifications",
-    },
-  ]);
-  bot.on("message", (msg) => {
-    const chatId = msg.chat.id.toString();
-    const message = msg.text?.toString();
-    console.log(`Message from ${chatId}: ${message}`);
-    switch (message) {
-      case "/ping":
-        console.log(`Ping from chat id ${chatId}`);
-        bot.sendMessage(chatId, "Pong!");
-        break;
-      case "/start":
-      case "/subscribe":
-        if (!conversations.has(chatId)) {
-          conversations.add(chatId);
-          bot.sendMessage(
-            chatId,
-            "You are now subscribed to the notifications."
-          );
-          console.log(`New subscriber: ${chatId}`);
-        } else {
-          bot.sendMessage(chatId, "You are already subscribed.");
-        }
-        break;
-      case "/unsubscribe":
-        if (conversations.has(chatId)) {
-          conversations.delete(chatId);
-          bot.sendMessage(chatId, "You are now unsubscribed.");
-          console.log(`${chatId} just unsubscribed`);
-        } else {
-          bot.sendMessage(chatId, "You are not subscribed.");
-        }
-        break;
-      default:
-        bot.sendMessage(chatId, "I do not understand the command");
-    }
-  });
-
   const poll = async (currentBestDate: Date | undefined = undefined) => {
     const content = await axios.get(BORGERSERVICE_URL, {
       headers: { Cookie },
@@ -122,7 +102,7 @@ const main = async () => {
       (!currentBestDate || candidateDate !== currentBestDate)
     ) {
       console.log(`NEW AVAILABLE TIME SLOT! ${humanReadableDates[0]}`);
-      conversations.forEach((conversation) =>
+      chatIds.forEach((conversation) =>
         bot.sendMessage(
           conversation,
           `🚨🚨🚨 *NEW DATE ALERT* 🚨🚨🚨\n\nFound free time slot on: ${humanReadableDates[0]}`,
