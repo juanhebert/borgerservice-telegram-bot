@@ -24,10 +24,14 @@ In a web browser, go to [this page](https://reservation.frontdesksuite.com/kbh/B
 
 ### Step 3: Connect to your Bot
 
-Launch the bot by running `npm start`. You can now add your bot to Telegram, which will subscribe you to the notifications automatically.
+Launch the bot by running `npm start`. You can now add your bot on Telegram, which will subscribe you to the notifications automatically 🙂
 
 ## Available commands
 
-- `/subscribe`
+- `/subscribe` (synonymous with `/start`)
 - `/unsubscribe`
 - `/ping`
+
+## Dependencies
+
+- Node v14 (the latest LTS version as of writing)
