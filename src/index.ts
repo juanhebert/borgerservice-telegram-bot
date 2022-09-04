@@ -11,7 +11,6 @@ const {
   BORGERSERVICE_URL = "",
   BORGERSERVICE_COOKIE: Cookie = "",
   BORGERSERVICE_TELEGRAM_TOKEN = "",
-  BORGERSERVICE_CONVERSATION = "",
 } = process.env;
 
 if (
@@ -27,9 +26,6 @@ if (
 
 const bot = new TelegramBot(BORGERSERVICE_TELEGRAM_TOKEN, { polling: true });
 const chatIds = new Set<string>();
-if (BORGERSERVICE_CONVERSATION !== "") {
-  chatIds.add(BORGERSERVICE_CONVERSATION);
-}
 
 bot.setMyCommands([
   {
