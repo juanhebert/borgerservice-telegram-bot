@@ -33,7 +33,7 @@ if (
   BORGERSERVICE_TELEGRAM_TOKEN === ""
 ) {
   console.error(
-    "Error: BORGER_SERVICE_URL, COOKIE and TOKEN env variables must be provided."
+    "Error: BORGERSERVICE_URL, BORGERSERVICE_COOKIE and BORGERSERVICE_TELEGRAM_TOKEN env variables must be provided."
   );
   process.exit(1);
 }
