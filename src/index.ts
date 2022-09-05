@@ -3,7 +3,7 @@ import { load } from "cheerio";
 import * as dotenv from "dotenv";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import { ONE_MINUTE } from "./constants";
-import { displayDate, minDate, sleep } from "./utils";
+import { displayDate, sleep } from "./utils";
 
 dotenv.config();
 
@@ -132,9 +132,9 @@ const main = async (): Promise<Date> => {
           { parse_mode: "Markdown" }
         );
       });
+      return candidateDate;
     }
-
-    return minDate(currentBestDate, candidateDate);
+    return currentBestDate;
   };
 
   console.log("Borgerservice Telegram Bot is running!");
