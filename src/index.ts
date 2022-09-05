@@ -32,8 +32,8 @@ let bestDate: Date | undefined;
 
 void bot.setMyCommands([
   {
-    command: "/ping",
-    description: "receive a pong message back from the bot",
+    command: "/latest",
+    description: "see the earliest available appointment",
   },
   {
     command: "/subscribe",
