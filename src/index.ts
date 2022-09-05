@@ -1,7 +1,7 @@
 import axios from "axios";
 import { load } from "cheerio";
 import * as dotenv from "dotenv";
-import TelegramBot from "node-telegram-bot-api";
+import TelegramBot, { Message } from "node-telegram-bot-api";
 import { ONE_MINUTE } from "./constants";
 import { displayDate, minDate, sleep } from "./utils";
 
@@ -28,6 +28,7 @@ if (
 
 const bot = new TelegramBot(BORGERSERVICE_TELEGRAM_TOKEN, { polling: true });
 const chatIds = new Set<string>();
+let bestDate: Date | undefined;
 
 void bot.setMyCommands([
   {
@@ -44,14 +45,24 @@ void bot.setMyCommands([
   },
 ]);
 
+const sendBestDate = async (
+  chatId: string,
+  bestDate: Date | undefined
+): Promise<Message> =>
+  await bot.sendMessage(
+    chatId,
+    bestDate != null
+      ? `The earliest available appointment is on ${displayDate(bestDate)}.`
+      : "There are no available appointments at the moment."
+  );
+
 bot.on("message", (msg) => {
   const chatId = msg.chat.id.toString();
   const message = msg.text?.toString() ?? "n/a";
   console.log(`Message from ${chatId}: ${message}`);
   switch (message) {
-    case "/ping":
-      console.log(`Ping from chat id ${chatId}`);
-      void bot.sendMessage(chatId, "Pong!");
+    case "/latest":
+      void sendBestDate(chatId, bestDate);
       break;
     case "/start":
     case "/subscribe":
@@ -61,6 +72,7 @@ bot.on("message", (msg) => {
           chatId,
           "You are now subscribed to the notifications."
         );
+        void sendBestDate(chatId, bestDate);
         console.log(`New subscriber: ${chatId}`);
       } else {
         void bot.sendMessage(chatId, "You are already subscribed.");
@@ -105,27 +117,28 @@ const main = async (): Promise<Date> => {
       (currentBestDate == null ||
         candidateDate.getTime() !== currentBestDate.getTime())
     ) {
+      console.log(`[${new Date().toISOString()}]`);
       console.log(`NEW AVAILABLE TIME SLOT! ${humanReadableCandidateDate}`);
+      console.log(
+        `Previous best date: ${currentBestDate?.toISOString() ?? "undefined"}`
+      );
+      console.log(`New best date: ${candidateDate.toISOString()}`);
       chatIds.forEach((conversation) => {
         void bot.sendMessage(
           conversation,
           "🚨🚨🚨 *NEW DATE ALERT* 🚨🚨🚨" +
             "\n\n" +
-            `Found free time slot on: ${humanReadableCandidateDate}`,
+            `Found free time slot on ${humanReadableCandidateDate}`,
           { parse_mode: "Markdown" }
         );
       });
     }
 
-    console.log(new Date());
-    console.log("Found:");
-    console.log(humanReadableDates);
-    console.log("");
-
     return minDate(currentBestDate, candidateDate);
   };
 
-  let bestDate: Date | undefined;
+  console.log("Borgerservice Telegram Bot is running!");
+
   while (true) {
     bestDate = await poll(bestDate);
     await sleep(ONE_MINUTE);
