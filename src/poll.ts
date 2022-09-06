@@ -1,5 +1,6 @@
 import axios from "axios";
 import { load } from "cheerio";
+import { displayDate } from "utils";
 
 export type PollResult =
   | { status: "new"; newDate: Date }
@@ -46,4 +47,26 @@ export const poll = async (
     };
   }
   return { status: "unchanged" };
+};
+
+export const logPollResult = (pollResult: PollResult): void => {
+  switch (pollResult.status) {
+    case "booked":
+      console.log(
+        `Time slot on ${displayDate(pollResult.oldDate)} has been booked`
+      );
+      if (pollResult.newDate != null) {
+        console.log(
+          `Earliest available time slot: ${displayDate(pollResult.newDate)}`
+        );
+      } else {
+        console.log("Couldn't find any other available time slots");
+      }
+      break;
+    case "new":
+      console.log(
+        `New available time slot: ${displayDate(pollResult.newDate)}`
+      );
+      break;
+  }
 };

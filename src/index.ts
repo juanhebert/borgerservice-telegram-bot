@@ -2,9 +2,9 @@ import * as dotenv from "dotenv";
 import { cleanEnv } from "envalid";
 import { initBot, notifySubscribers } from "./bot";
 import { ONE_MINUTE } from "./constants";
-import { poll } from "./poll";
+import { logPollResult, poll } from "./poll";
 import { store } from "./store";
-import { displayDate, sleep } from "./utils";
+import { sleep } from "./utils";
 import { nonEmptyStr } from "./validators";
 
 dotenv.config();
@@ -36,27 +36,10 @@ const main = async (): Promise<Date> => {
       BORGERSERVICE_COOKIE,
       store.earliestDate
     );
-    await notifySubscribers(bot, store.subscribers, pollResult);
-    switch (pollResult.status) {
-      case "booked":
-        store.earliestDate = pollResult.newDate;
-        console.log(
-          `Time slot on ${displayDate(pollResult.oldDate)} has been booked`
-        );
-        if (pollResult.newDate != null) {
-          console.log(
-            `Earliest available time slot: ${displayDate(pollResult.newDate)}`
-          );
-        } else {
-          console.log("Couldn't find any other available time slots");
-        }
-        break;
-      case "new":
-        store.earliestDate = pollResult.newDate;
-        console.log(
-          `New available time slot: ${displayDate(pollResult.newDate)}`
-        );
-        break;
+    if (pollResult.status !== "unchanged") {
+      store.earliestDate = pollResult.newDate;
+      await notifySubscribers(bot, store.subscribers, pollResult);
+      logPollResult(pollResult);
     }
     await sleep(ONE_MINUTE);
   }
