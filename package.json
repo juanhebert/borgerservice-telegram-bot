@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "tsc && node dist/index.js",
     "lint": "eslint . --ext .ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "git pull && npm ci && rm -rf dist && tsc && pm2 restart ecosystem.config.js"
   },
   "author": "Juan Manuel Hébert <juanhebert@protonmail.com>",
   "license": "MIT",
