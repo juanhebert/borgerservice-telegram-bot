@@ -12,7 +12,7 @@ const sendEarliestDate = async (
     chatId,
     earliestDate != null
       ? `The earliest available time slot is on ${displayDate(earliestDate)}.`
-      : "There are no available time slot at the moment."
+      : "There are no available time slots at the moment."
   );
 
 export const initBot = async (
@@ -96,7 +96,7 @@ export const notifySubscribers = async (
   if (pollResult.status === "booked") {
     const { oldDate, newDate } = pollResult;
     message =
-      `The last timeslot on ${displayDate(oldDate)} has now been booked.` +
+      `The last time slot on ${displayDate(oldDate)} has now been booked.` +
       (newDate != null ? ` Next best date: ${displayDate(newDate)}` : "");
   }
   if (pollResult.status === "new") {
