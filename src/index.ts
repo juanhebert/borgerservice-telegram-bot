@@ -147,6 +147,7 @@ const main = async (): Promise<Date> => {
         `The last timeslot on ${readablePreviousDate} has now been booked.` +
           `Next best date: ${readableDate}.`
       );
+      return candidateDate;
     }
     return currentEarliestDate;
   };
