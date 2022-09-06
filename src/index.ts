@@ -92,6 +92,18 @@ bot.on("message", (msg) => {
   }
 });
 
+const sendAll = async (
+  chatIds: Iterable<string> | ArrayLike<string>,
+  message: string
+): Promise<Message[]> => {
+  return await Promise.all(
+    Array.from(chatIds).map(
+      async (chatId) =>
+        await bot.sendMessage(chatId, message, { parse_mode: "Markdown" })
+    )
+  );
+};
+
 const main = async (): Promise<Date> => {
   const poll = async (
     currentEarliestDate: Date | undefined = undefined
@@ -109,30 +121,38 @@ const main = async (): Promise<Date> => {
     });
     availableDates.sort((a, b) => a.getTime() - b.getTime());
     const candidateDate = availableDates[0];
-    if (
-      candidateDate != null &&
-      (currentEarliestDate == null ||
-        candidateDate.getTime() !== currentEarliestDate.getTime())
-    ) {
-      const humanReadableDate = displayDate(candidateDate);
-      console.log(`[${new Date().toISOString()}]`);
-      console.log(`NEW AVAILABLE TIME SLOT! ${humanReadableDate}`);
-      chatIds.forEach((conversation) => {
-        void bot.sendMessage(
-          conversation,
-          "🚨🚨🚨 *NEW DATE ALERT* 🚨🚨🚨" +
-            "\n\n" +
-            `Found free time slot on ${humanReadableDate}`,
-          { parse_mode: "Markdown" }
-        );
-      });
+    if (candidateDate == null) {
       return candidateDate;
+    }
+    const currentEarliestTime = currentEarliestDate?.getTime();
+    const candidateTime = candidateDate.getTime();
+    const readableDate = displayDate(candidateDate);
+    console.log(`[${new Date().toISOString()}]`);
+    console.log(`NEW AVAILABLE TIME SLOT! ${readableDate}`);
+    if (
+      currentEarliestTime == null ||
+      currentEarliestDate == null || // Only here for type-guarding purposes
+      candidateTime < currentEarliestTime
+    ) {
+      void sendAll(
+        chatIds,
+        "🚨🚨🚨 *NEW DATE ALERT* 🚨🚨🚨" +
+          "\n\n" +
+          `Found free time slot on ${readableDate}.`
+      );
+      return candidateDate;
+    }
+    const readablePreviousDate = displayDate(currentEarliestDate);
+    if (candidateTime > currentEarliestTime) {
+      void sendAll(
+        chatIds,
+        `The last timeslot on ${readablePreviousDate} has now been booked.` +
+          `Next best date: ${readableDate}.`
+      );
     }
     return currentEarliestDate;
   };
-
   console.log("Borgerservice Telegram Bot is running!");
-
   while (true) {
     earliestDate = await poll(earliestDate);
     await sleep(ONE_MINUTE);
