@@ -1,6 +1,6 @@
 import axios from "axios";
 import { load } from "cheerio";
-import { displayDate } from "utils";
+import { displayDate } from "./utils";
 
 export type PollResult =
   | { status: "new"; newDate: Date }
