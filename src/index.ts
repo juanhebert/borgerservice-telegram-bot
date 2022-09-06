@@ -68,11 +68,9 @@ bot.on("message", (msg) => {
     case "/subscribe":
       if (!chatIds.has(chatId)) {
         chatIds.add(chatId);
-        void bot.sendMessage(
-          chatId,
-          "You are now subscribed to the notifications."
-        );
-        void sendEarliestDate(chatId, earliestDate);
+        void bot
+          .sendMessage(chatId, "You are now subscribed to the notifications.")
+          .then(async () => await sendEarliestDate(chatId, earliestDate));
         console.log(`New subscriber: ${chatId}`);
       } else {
         void bot.sendMessage(chatId, "You are already subscribed.");
