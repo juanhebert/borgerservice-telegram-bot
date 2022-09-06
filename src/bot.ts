@@ -97,7 +97,9 @@ export const notifySubscribers = async (
     const { oldDate, newDate } = pollResult;
     message =
       `The last time slot on ${displayDate(oldDate)} has now been booked.` +
-      (newDate != null ? ` Next best date: ${displayDate(newDate)}` : "");
+      (newDate != null
+        ? ` Next best date: ${displayDate(newDate)}`
+        : " No other dates are currently available.");
   }
   if (pollResult.status === "new") {
     const { newDate } = pollResult;
